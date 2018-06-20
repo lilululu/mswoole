@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>聊天室-opqnext.com</title>
+    <!--<script src="js/jquery-2.1.1.min.js"></script>-->
+    <script src="js/jquery-1.11.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <!--<link rel="stylesheet" type="text/css" media="screen" href="css/jquery.toastmessage.css">-->
+    <link rel="stylesheet" type="text/css" media="screen" href="css/toast.style.css">
+    <!--<script src="js/jquery.toastmessage.js"></script>-->
+    <script src="js/toast.script.js"></script>
+    <style>
+        body {
+            width: 600px;
+            margin: 40px auto;
+            font-family: 'trebuchet MS', 'Lucida sans', Arial;
+            font-size: 14px;
+            color: #444;
+        }
+    </style>
+</head>
+<body>
+
+<h2>聊天室（CHAT ROOM）</h2>
+<br><br>
+<br><br>
+<div id="msg"></div>
+<div class="form-group">
+    <input class="form-control"  style="width: 50%;float: left" type="text" id="text">
+    <button type="button" class="btn btn-primary" data-loading-text="Loading..."  value="" style="float: left;margin-left: 10px;" onclick="song()">发送数据</button>
+</div>
+<audio id="audio1" width="420" >
+    <source src="img/6571.wav" type="audio/wav" />
+    <source src="img/17.ogg" type="audio/ogg" />
+</audio>
+</body>
+<script>
+    Date.prototype.Format = function (fmt) { //author: meizz
+        var o = {
+            "M+": this.getMonth() + 1, //月份
+            "d+": this.getDate(), //日
+            "h+": this.getHours(), //小时
+            "m+": this.getMinutes(), //分
+            "s+": this.getSeconds(), //秒
+            "q+": Math.floor((this.getMonth() + 3) / 3), //季度
+            "S": this.getMilliseconds() //毫秒
+        };
+        if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+        for (var k in o)
+            if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+        return fmt;
+    }
+    var msg = document.getElementById("msg");
+    // var wsServer = 'ws://192.168.56.131:9502';
+    // var wsServer = 'ws://192.168.56.131:10023';
+    var wsServer = 'ws://127.0.0.1:10023';
+    //调用websocket对象建立连接：
+    //参数：ws/wss(加密)：//ip:port （字符串）
+    var websocket = new WebSocket(wsServer);
+    //onopen监听连接打开
+    websocket.onopen = function (evt) {
+        msg.innerHTML = websocket.readyState;
+    };
+    function song(){
+        var text = document.getElementById('text').value;
+        document.getElementById('text').value = '';
+        var date = new Date().Format("MM-dd hh:mm:ss");
+        msg.innerHTML += '<p class="text-center"><span class="badge" style="background-color:#E0E0E0">'+date+'</span></p>';
+        msg.innerHTML += '<p class="text-right">[我]: '+ text+'</p>';
+        //向服务器发送数据
+        websocket.send(text);
+    }
+    //监听连接关闭
+    //    websocket.onclose = function (evt) {
+    //        console.log("Disconnected");
+    //    };
+    //onmessage 监听服务器数据推送
+    websocket.onmessage = function (evt) {
+
+        console.log(evt);
+        // $().toastmessage('showSuccessToast', "您有新消息啦！");
+
+        $.Toast("您有新消息啦", evt.data, "success", {
+            stack: true,
+            has_icon:true,
+            has_close_btn:true,
+            fullscreen:false,
+            timeout:3000,
+            sticky:false,
+            has_progress:true,
+            rtl:false,
+        });
+        var audio = document.getElementById("audio1");
+        audio.play();
+        var date = new Date().Format("MM-dd hh:mm:ss");
+        msg.innerHTML += '<p class="text-center"><span class="badge" style="background-color:#E0E0E0">'+date+'</span></p>';
+        msg.innerHTML += '<p class="text-left">'+evt.data +'</p>';
+    };
+    //监听连接错误信息
+    //    websocket.onerror = function (evt, e) {
+    //        console.log('Error occured: ' + evt.data);
+    //    };
+    $(function() {
+        // $("#myCarousel").carousel('cycle');
+//         $().toastmessage('showSuccessToast', "您有新消息啦！");
+//         var audio = document.getElementById("audio1");
+//         audio.play();
+    });
+</script>
+</html>
